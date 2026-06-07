@@ -1,0 +1,3 @@
+[Mon Jun  7 10:00:00 2026] Linux version 5.15.0
+[Mon Jun  7 10:00:01 2026] BIOS-provided physical RAM map
+[Mon Jun  7 10:00:02 2026] NET: Registered PF_INET6 protocol family

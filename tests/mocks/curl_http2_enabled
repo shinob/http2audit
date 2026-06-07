@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# curl モック: HTTP/2 有効レスポンスを返す
+echo "HTTP/2 200"
+echo "content-type: text/html"
+echo "server: nginx"

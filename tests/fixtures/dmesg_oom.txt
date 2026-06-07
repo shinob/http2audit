@@ -1,0 +1,3 @@
+[Mon Jun  7 11:00:00 2026] Linux version 5.15.0
+[Mon Jun  7 12:00:00 2026] Out of memory: Killed process 1234 (nginx) total-vm:2048kB, anon-rss:1024kB, file-rss:0kB
+[Mon Jun  7 12:00:01 2026] oom_reaper: reaped process 1234 (nginx), now anon-rss:0kB, file-rss:0kB

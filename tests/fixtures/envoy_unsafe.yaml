@@ -1,0 +1,6 @@
+# envoy_unsafe.yaml - http2_options 未設定
+static_resources:
+  listeners:
+    - filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager

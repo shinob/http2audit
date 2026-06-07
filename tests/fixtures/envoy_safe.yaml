@@ -1,0 +1,11 @@
+# envoy_safe.yaml - 推奨値が設定済み
+static_resources:
+  listeners:
+    - filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                http2_options:
+                  max_concurrent_streams: 100
+                  hpack_table_size: 4096
+                max_request_headers_kb: 60
