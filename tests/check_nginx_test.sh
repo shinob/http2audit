@@ -71,6 +71,24 @@ t_unsafe_streams_warn() (
     echo "$out" | grep -q 'http2_max_concurrent_streams.*未設定'
 )
 
+t_http2_off_streams_skip() (
+    export NO_COLOR=1
+    source "$DIR/../lib/output.sh"
+    source "$DIR/../lib/check_nginx.sh"
+    NGINX_CONF_FILE="$DIR/fixtures/nginx_http2_off_unset.conf"
+    out=$(check_nginx 2>&1)
+    echo "$out" | grep -q '\[SKIP\] http2_max_concurrent_streams.*HTTP/2 無効のため評価対象外'
+)
+
+t_http2_off_streams_no_warn() (
+    export NO_COLOR=1
+    source "$DIR/../lib/output.sh"
+    source "$DIR/../lib/check_nginx.sh"
+    NGINX_CONF_FILE="$DIR/fixtures/nginx_http2_off_unset.conf"
+    out=$(check_nginx 2>&1)
+    ! echo "$out" | grep -q 'http2_max_concurrent_streams.*未設定（デフォルト'
+)
+
 t_unsafe_suggest() (
     export NO_COLOR=1
     source "$DIR/../lib/output.sh"
@@ -98,6 +116,8 @@ _test "nginx: safe.conf → concurrent_streams OK"     t_safe_streams_ok
 _test "nginx: safe.conf → client_header_timeout OK"  t_safe_timeout_ok
 _test "nginx: unsafe.conf → HTTP/2 有効で WARN"       t_unsafe_http2_warn
 _test "nginx: unsafe.conf → concurrent_streams WARN" t_unsafe_streams_warn
+_test "nginx: HTTP/2無効+未設定 → concurrent_streams SKIP"    t_http2_off_streams_skip
+_test "nginx: HTTP/2無効+未設定 → 未設定WARNにならない"        t_http2_off_streams_no_warn
 _test "nginx: unsafe.conf → 改善提案あり"             t_unsafe_suggest
 _test "nginx: safe.conf → 改善提案なし"               t_safe_no_suggest
 

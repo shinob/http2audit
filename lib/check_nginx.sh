@@ -38,22 +38,29 @@ check_nginx() {
     fi
 
     # HTTP/2 有効確認
+    local http2_enabled=false
     if _nginx_conf_grep 'http2[[:space:]]+on' | grep -q . || \
        _nginx_conf_grep 'listen.*[[:space:]]http2' | grep -q .; then
         log_warn "HTTP/2 が有効です"
         _NGINX_SUGGEST=true
+        http2_enabled=true
     else
         log_ok "HTTP/2 は無効です（nginx）"
     fi
 
-    # http2_max_concurrent_streams
+    # http2_max_concurrent_streams（ngx_http_v2_module 専用設定のため、
+    # HTTP/2 が無効な場合は未設定でも nginx に評価されず実害がない）
     local streams
     streams=$(_nginx_conf_grep 'http2_max_concurrent_streams' \
         | sed 's/.*http2_max_concurrent_streams[[:space:]]*//' \
         | tr -d ';' | grep -oE '^[0-9]+' | head -1)
     if [[ -z "$streams" ]]; then
-        log_warn "http2_max_concurrent_streams が未設定（デフォルト: 128）→ 64 以下を推奨"
-        _NGINX_SUGGEST=true
+        if [[ "$http2_enabled" == true ]]; then
+            log_warn "http2_max_concurrent_streams が未設定（デフォルト: 128）→ 64 以下を推奨"
+            _NGINX_SUGGEST=true
+        else
+            log_skip "http2_max_concurrent_streams は HTTP/2 無効のため評価対象外です（未設定のままで問題ありません）"
+        fi
     elif [[ "$streams" -le 64 ]]; then
         log_ok "http2_max_concurrent_streams = $streams"
     else

@@ -65,10 +65,17 @@ chmod +x http2audit.sh
 
 | 設定 | 推奨値 |
 |---|---|
-| `http2_max_concurrent_streams` | 64 以下 |
+| `http2_max_concurrent_streams` | 64 以下（HTTP/2 が無効な場合は評価対象外） |
 | `large_client_header_buffers` | `4 8k` |
 | `client_header_timeout` | 10s 以下 |
 | `keepalive_timeout` | 15s 以下 |
+
+> `http2_max_concurrent_streams` は `ngx_http_v2_module`（HTTP/2 専用）のディレクティブです。
+> HTTP/2 が無効なサーバーではこの設定値自体が nginx に評価されないため、未設定でも
+> `[WARN]` ではなく `[SKIP]`（評価対象外）として表示されます。
+> 一方、`large_client_header_buffers` / `client_header_timeout` / `keepalive_timeout` は
+> HTTP/1.x にも適用される一般的なハードニング設定のため、HTTP/2 の有効・無効に関わらず
+> 確認・推奨値への調整をおすすめします。
 
 ## Apache チェック項目
 
@@ -84,6 +91,23 @@ chmod +x http2audit.sh
 |---|---|
 | `http2_options.max_concurrent_streams` | 100 以下 |
 | `max_request_headers_kb` | 60 以下 |
+
+## Webサーバーのバイナリ検出について
+
+nginx / Apache / Envoy は、まず `$PATH` 上で検索し、見つからない場合は
+`/usr/sbin`、`/usr/local/sbin`、`/usr/local/nginx/sbin`、`/opt/homebrew/...`（macOS/Homebrew）
+など、一般ユーザーの `$PATH` に含まれないことが多い設置場所も自動的に探索します。
+
+それでも見つからない場合は `[SKIP]` と表示されますが、実際にはサーバーが
+別の場所にインストールされていることもあります。その場合は環境変数で
+バイナリのフルパスを直接指定できます。
+
+```bash
+NGINX_BIN=/path/to/nginx ./http2audit.sh https://example.com
+APACHE_BIN=/path/to/apachectl ./http2audit.sh https://example.com
+HTTPD_BIN=/path/to/httpd ./http2audit.sh https://example.com
+ENVOY_BIN=/path/to/envoy ./http2audit.sh https://example.com
+```
 
 ## テスト
 
