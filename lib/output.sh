@@ -26,6 +26,31 @@ _strip_ansi() {
     sed "s/${esc}\[[0-9;]*[mK]//g"
 }
 
+# $PATH に含まれないことが多い一般的な設置場所
+_BIN_SEARCH_DIRS=(
+    /usr/sbin /usr/local/sbin /usr/local/bin
+    /usr/local/nginx/sbin /usr/local/apache2/bin
+    /opt/homebrew/bin /opt/homebrew/sbin
+    /opt/homebrew/opt/nginx/bin /opt/homebrew/opt/httpd/bin
+)
+
+# $PATH 上だけでなく上記の設置場所も探してバイナリのフルパスを1つ返す
+# 使い方: _locate_bin <候補コマンド名...>（先に見つかったものを優先）
+_locate_bin() {
+    local name dir
+    for name in "$@"; do
+        [[ -z "$name" ]] && continue
+        if command -v "$name" &>/dev/null; then
+            command -v "$name"
+            return 0
+        fi
+        for dir in "${_BIN_SEARCH_DIRS[@]}"; do
+            [[ -x "$dir/$name" ]] && { printf '%s/%s\n' "$dir" "$name"; return 0; }
+        done
+    done
+    return 1
+}
+
 _emit() {
     local msg="$1"
     printf '%b\n' "$msg"

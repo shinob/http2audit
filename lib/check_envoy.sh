@@ -22,13 +22,15 @@ check_envoy() {
     log_section "STEP 4: Envoy 設定確認"
 
     if [[ -z "$ENVOY_CONF_FILE" ]]; then
-        if ! command -v "$ENVOY_BIN" &>/dev/null; then
-            log_skip "Envoy が見つかりません"
+        local bin
+        bin=$(_locate_bin "$ENVOY_BIN")
+        if [[ -z "$bin" ]]; then
+            log_skip "Envoy が見つかりません（PATH と一般的な設置場所を確認しました。場所が分かる場合は ENVOY_BIN=/path/to/envoy で指定してください）"
             return 0
         fi
         local version
-        version=$("$ENVOY_BIN" --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "不明")
-        log_info "Envoy $version を検出"
+        version=$("$bin" --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "不明")
+        log_info "Envoy $version を検出 ($bin)"
     fi
 
     local conf

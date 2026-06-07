@@ -21,9 +21,7 @@ _apache_conf_grep() {
 }
 
 _apache_bin() {
-    command -v "$APACHE_BIN" 2>/dev/null \
-        || command -v "$HTTPD_BIN" 2>/dev/null \
-        || true
+    _locate_bin "$APACHE_BIN" "$HTTPD_BIN"
 }
 
 check_apache() {
@@ -34,12 +32,12 @@ check_apache() {
         local bin
         bin=$(_apache_bin)
         if [[ -z "$bin" ]]; then
-            log_skip "Apache が見つかりません"
+            log_skip "Apache が見つかりません（PATH と一般的な設置場所を確認しました。場所が分かる場合は APACHE_BIN=/path/to/apachectl または HTTPD_BIN=/path/to/httpd で指定してください）"
             return 0
         fi
         local version
         version=$("$bin" -v 2>&1 | grep -oE 'Apache/[0-9.]+' | head -1 || echo "不明")
-        log_info "$version を検出"
+        log_info "$version を検出 ($bin)"
 
         # mod_http2 有効確認
         if "$bin" -M 2>/dev/null | grep -qi 'http2_module'; then

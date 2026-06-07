@@ -21,13 +21,15 @@ check_nginx() {
     log_section "STEP 4: nginx 設定確認"
 
     if [[ -z "$NGINX_CONF_FILE" ]]; then
-        if ! command -v "$NGINX_BIN" &>/dev/null; then
-            log_skip "nginx が見つかりません"
+        local bin
+        bin=$(_locate_bin "$NGINX_BIN")
+        if [[ -z "$bin" ]]; then
+            log_skip "nginx が見つかりません（PATH と一般的な設置場所を確認しました。場所が分かる場合は NGINX_BIN=/path/to/nginx で指定してください）"
             return 0
         fi
         local version
-        version=$("$NGINX_BIN" -v 2>&1 | grep -oE 'nginx/[0-9.]+' | head -1 || echo "不明")
-        log_info "$version を検出"
+        version=$("$bin" -v 2>&1 | grep -oE 'nginx/[0-9.]+' | head -1 || echo "不明")
+        log_info "$version を検出 ($bin)"
 
         if ! find /etc/nginx -name "*.conf" -readable 2>/dev/null | grep -q .; then
             log_skip "nginx 設定ファイルが読み取れません（権限不足の可能性）"
